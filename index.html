@@ -4,104 +4,12 @@ search_exclude: true
 image: images/logo.png
 ---
 
-# The Math Behind Regularization in Regression Models
+This site is built with [fastpages](https://github.com/fastai/fastpages), An easy to use blogging platform with extra features for Jupyter Notebooks.
 
-After fitting your latest machine learning model using sklearn's `LinearRegression`, you check your training score to find that your model has a whopping 99% accuracy! Excitedly, you check your validation scores and are disappointed to find the model has a meager 70% accuracy on unseen data. Overfitting strikes again! 
+![]({{site.baseurl}}/images/diagram.png "https://github.com/fastai/fastpages")
 
-One of the challenges when fitting machine learning models is to determine how to capture enough information about the data without creating an overly complicated model. This is the **fundamental tradeoff**. The fundamental tradeoff is the notion that as we make our models more complex, we tend to capture irrelevant trends in our training data. As a result, the model over performs on this particular training data but fails to generalize well to unseen data. In linear regression, 
-overfitting can occur if we have too many features in our model or if individual feature weights are highly sensitive.
+[fastpages](https://github.com/fastai/fastpages) automates the process of creating blog posts via GitHub Actions, so you don't have to fuss with conversion scripts.  A full list of features can be found on [GitHub](https://github.com/fastai/fastpages).  
 
-One way we can address this problem is to apply regularization. There are different regularization strategies that can be implemented to simplify a model. Below, I explain the mechanics that underlie these strategies. However, in order to understand this, we need to understand how linear regression works. 
+You can edit the `index.html` file to change this content.
 
-
-## Minimizing Loss Functions 
-
-Fitting a linear regression model comes down to finding a weight for each feature in the dataset.  To create a linear model, the value for each feature ($X_i$ ) is multiplied by it's respective weight ($w_i$) and then summed to give $Y$, the final prediction:
- 
-$$ Y = w_0 + w_1X_1 + ... + w_iX_i \text{ (where i is the number of features) }$$
-
-
-To find these weights, linear regression algorithms will try to find a solution that minimizes a **Loss Function**. The most commonly used Linear Regression Loss Function is **Mean Squared Error (MSE)**: 
-
-
-$$f(w) = \frac{1}{2}\sum_i^n(w^TX_i - y_i)^2 \text{ or }\\
-f(x) = \frac{1}{2}\lVert{Xw -y}\rVert^2_2$$ 
-
-In the fitting process, functions like sklearn's `LinearRegression` will find a vector of weights ($w$) such that the loss function is minimized. However, there can be multiple weight vectors that minimize this function. With this, we want to select the simplest combination of weights (smaller values are simpler). This is where regularization can be utilized to select weights that achieve this, ultimately reducing overfitting.
-
-
-## Regularization 
-
-There are 3 main regularizations strategies:  **$L_0$, $L_1$ & $L_2$ Regularization**. These strategies add a *penalization term* to the loss function; these terms are called $L_0$, $L_1$ & $L_2$ *norms* (denoted as $\lVert w\rVert_0$, $\lVert w\rVert_1$ and $\lVert w\rVert_2$ respectively . The primary difference between the strategies is the way these regularization norms are calculated. The new linear regression loss functions look like this:
-
-$$l0 : f(w) = \frac{1}{2}\lVert{Xw -y}\rVert^2_2 + \lambda\lVert w\rVert_0$$
-
-$$l1 : f(w) = \frac{1}{2}\lVert{Xw -y}\rVert^2_2 + \frac{\lambda}{2}\lVert w\rVert_1$$
-
-$$l2 : f(w) = \frac{1}{2}\lVert{Xw -y}\rVert^2_2 + \frac{\lambda}{2} \lVert w\rVert_2^2$$
-
-(Note that we will not talk about $\lambda$ here, but this is a coefficient that can be selected to emphasize how much regularization we want. Higher $\lambda$ values increase the magnitude of the regularization penalty and vice versa)
-
-Regression algorithms will now try to minimize these new loss functions (depending on which regularization is being used). To understand the difference between these methods, we need to see how the different norms are calculated.
-
-### $L_0$ Norm
-
-Arguably, $L_0$ is the simplest regularization technique. $L_0$ norm is calculated by counting the number of non-zero weights in a given weight vector ($w$), this term is denoted as $\lVert w\rVert_0$.  
-
-For example given the following 2 weight vectors: 
-
-$$w_1 = \begin{bmatrix}1 \\0\\0\end{bmatrix} \Longrightarrow \lVert w\rVert_0 = 1$$   
-$$w_2 = \begin{bmatrix}1 \\1\\0\end{bmatrix} \Longrightarrow \lVert w\rVert_0 = 2$$ 
-
-$w_1$ and $w_2$ have $L_0$ norms of 1 and 2 respectively because the number of non-zero weights within these vectors are 1 and 2 respectively. If by chance these two weight vectors somehow produced **the same MSE**, then $L_0$ regularization would select $w_1$ because it has **the smallest penalty associated with it**. 
-
-
-### $L_1$ Norm
-
-The penalty applied using $L_1$ regularization considers the magnitude of each learned weight. This penalty is the sum of the absolute values of the learned weights. The $L_1$ norm is denoted by $\lVert w\rVert_1$: 
-
-$$\lVert w\rVert_1 = \lvert w_1 \rvert + \lvert w_2 \rvert + \dots + \lvert w_i \rvert$$
-
-Given the following 2 weight vectors:
-
-$$w_1 = \begin{bmatrix}1 \\-1\\0\end{bmatrix} \Longrightarrow \lVert w\rVert_1 = 1 + |-1| + 0 = 2$$   
-$$w_2 = \begin{bmatrix}2 \\-1\\0\end{bmatrix} \Longrightarrow \lVert w\rVert_1 = 2 + |-1| + 0 = 3$$ 
-
-As previously mentioned, $\lVert w\rVert_1$ is added as a penalty to the MSE. Again, if the two weight vectors $w_1$ and $w_2$ have comparable MSE values, $L_1$ regularization will choose the vector with the smallest penalty ($w_1$ in this case).
-
-
-### $L_2$ Norm
-
-$L_2$ norm is denoted by $\lVert w \rVert_2$ and is calculated by: 
-
-$$\lVert w \rVert_2 = (w_1^2 + w_2^2 + \dots + w_n^2)^{1/2}$$
-
-One thing to note in $L_2$ regularization is that the penalty applied to the loss function is the **square of the $L_2$ norm**:
-
-$$f(w) = \frac{1}{2}\lVert{Xw -y}\rVert^2_2 + \lVert w\rVert_2^2 \\ \text{(note: $\lVert w \rVert_2$ is being squared here)}$$
-
-
-Knowing this, the process is the same as the previous examples. Given a set of weight vectors, we determine which vector produces the smallest penalty. Consider the following 2 weight vectors: 
-
-$$w_1 = \begin{bmatrix}1 \\0\\0\end{bmatrix}\Longrightarrow \lVert w \rVert_2 = (1^2 + 0^2 + 0^2)^{1/2} = 1$$
-$$w_2 = \begin{bmatrix}3 \\4\\0\end{bmatrix}\Longrightarrow \lVert w \rVert_2 = (3^2 + 4^2 + 0^2)^{1/2} = 5$$
-
-
-Once again, if vectors $w_1$ and $w_2$ produce the same MSE, $L_2$ regularization will select the penalty which is lower. Since 1 is smaller than 25 ($L_2$ norms are squared), the algorithm would select $w_1$. 
-
-## Implementation 
-
-After understanding the mathematical differences between the regularization penalties, we can now apply them to our models. The different regularization strategies have their [strengths and weaknesses](https://towardsdatascience.com/regularization-in-machine-learning-connecting-the-dots-c6e030bfaddd), but $L_2$ followed by $L_1$ regularization are typically the most popular. Conveniently, sklearn has created linear regression models that automatically apply different regularization for us. [`Ridge`](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html) automatically applies $L_2$ regularization and [`Lasso`](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html) applies $L_1$. Use these to your advantage. Generally, when I build a regression model, I use `Ridge`. However, I occasionally use `Lasso` when I want increased model interpretability and the ability to ['feature select'](https://towardsdatascience.com/feature-selection-using-regularisation-a3678b71e499). Finally, remember it is possible to tune $\lambda$ in order to dictate the strength of the regularization applied. 
-
-## Conclusion 
-
-My goal here was to introduce a useful strategy to reduce overfitting in linear regression models. The fundamental tradeoff continues to be a difficulty in machine learning, but regularization can be used to help. Many people will use `Ridge` and `Lasso` in their models without knowing how these functions differ. However, in order to best apply these techniques, I do think it is important to understand how the penalties differ between regularization strategies. Now that you know how to calculate $L_0$, $L_1$ and $L_2$ penalties by hand, try using them in your next linear model to reduce overfitting. Typically the default parameters of `Ridge` and `Lasso` are suffice and it rarely takes away from the quality of fitting! 
-
-
-## References
-
-- https://github.ubc.ca/MDS-2020-21/DSCI_573_feat-model-select_students/blob/master/lectures/07_lecture-l2-l1-regularization.ipynb
-- https://towardsdatascience.com/regularization-in-machine-learning-connecting-the-dots-c6e030bfaddd
-- https://towardsdatascience.com/feature-selection-using-regularisation-a3678b71e499
-- https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html
-- http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html
+# Posts
